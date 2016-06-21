@@ -18,7 +18,7 @@ import javafx.util.Duration;
 public class DisplayStage extends Stage
 {
     private Group root;
-    private Rectangle[] resultBoxes;
+    private Rectangle2D[] resultBoxes;
 
     public DisplayStage()
     {
@@ -37,8 +37,12 @@ public class DisplayStage extends Stage
         background.setViewport(new Rectangle2D(0, 0, initWidth, initHeight));
         root.getChildren().add(background);
 
-        flipBox();
         show();
+    }
+
+    private void initResultsBoxes()
+    {
+        resultBoxes = new Rectangle2D[];
     }
 
     private void flipBox()
