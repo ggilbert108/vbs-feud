@@ -39,14 +39,19 @@ public class GameState
         }
     }
 
-    private void setNumResults(int n)
+    public void setNumResults(int n)
     {
         resultText = new String[n];
     }
 
-    private int getNumResults()
+    public int getNumResults()
     {
         return resultText.length;
+    }
+
+    public String getResult(int index)
+    {
+        return resultText[index];
     }
 }
 

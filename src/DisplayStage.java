@@ -4,6 +4,8 @@ import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -11,6 +13,7 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -23,13 +26,18 @@ import javafx.util.Duration;
  */
 public class DisplayStage extends Stage implements ResultSubmittedListener
 {
+    private final double RESULT_WIDTH_RATIO = .75;
+
     private GameState gameState;
     private Group root;
+    private Text[] results;
 
     public DisplayStage(GameState gameState)
     {
         this.gameState = gameState;
         gameState.addResultSubmittedListener(this);
+
+        results = new Text[GameState.MAX_RESULTS];
 
         final int initWidth = 800;
         final int initHeight = 680;
@@ -80,24 +88,27 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         ImageView box = new ImageView(
                 new Image("result_box.png")
         );
-        setImageviewBounds(box, getResultBox(index));
+        Rectangle2D resultRect = getResultBox(index);
+        setImageviewBounds(box, resultRect);
         root.getChildren().add(box);
 
         SequentialTransition rotator = createRotator(box);
         rotator.play();
-        rotator.onFinishedProperty().setValue(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Text text = new Text(result);
-                text.setStyle("-fx-text-color: white;");
-                text.setX(box.getX() + 80);
-                text.setY(box.getY() + 60);
-                text.setFont(new Font(32));
-                root.getChildren().add(text);
+        rotator.onFinishedProperty().setValue(event -> {
+            Text text = new Text(result);
+            text.setFill(Color.WHITE);
 
-                root.getChildren().remove(box);
-                text.toFront();
-            }
+            final double xOffsetRatio = 0.01;
+            double xOffset = xOffsetRatio * getWidth();
+
+            Bounds bounds = new BoundingBox(resultRect.getMinX() + xOffset, resultRect.getMinY(),
+                    resultRect.getWidth() * RESULT_WIDTH_RATIO, resultRect.getHeight());
+            fitTextInBounds(bounds, text);
+
+            root.getChildren().add(text);
+
+            root.getChildren().remove(box);
+            text.toFront();
         });
     }
 
@@ -109,12 +120,7 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         rotator1.setInterpolator(Interpolator.LINEAR);
         rotator1.setCycleCount(1);
 
-        rotator1.onFinishedProperty().setValue(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                card.setScaleY(-1);
-            }
-        });
+        rotator1.onFinishedProperty().setValue(event -> card.setScaleY(-1));
 
 
         RotateTransition rotator2 = new RotateTransition(Duration.millis(250), card);
@@ -138,9 +144,27 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         image.setFitHeight(bounds.getHeight());
     }
 
+    private void fitTextInBounds(Bounds outer, Text text)
+    {
+        for(int i = 72; i >= 1; i--)
+        {
+            text.setFont(new Font(i));
+            Bounds textBounds = text.getBoundsInParent();
+
+            double outerCenterX = (outer.getMaxX() + outer.getMinX()) / 2;
+            double outerCenterY = (outer.getMaxY() + outer.getMinY()) / 2;
+
+            text.setX(outerCenterX - textBounds.getWidth() / 2);
+            text.setY(outerCenterY + textBounds.getHeight() / 4);
+
+            if(outer.contains(textBounds))
+                break;
+        }
+    }
+
     @Override
     public void resultSubmitted(SubmissionEvent e)
     {
-        flipBox(e.index, "Result");
+        flipBox(e.index, gameState.getResult(e.index));
     }
 }
