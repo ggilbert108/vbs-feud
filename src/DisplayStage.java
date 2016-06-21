@@ -42,7 +42,7 @@ public class DisplayStage extends Stage
 
     private void initResultsBoxes()
     {
-        resultBoxes = new Rectangle2D[];
+        resultBoxes = new Rectangle2D[GameState.MAX_RESULTS];
     }
 
     private void flipBox()
