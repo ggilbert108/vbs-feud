@@ -12,7 +12,13 @@ public class MainApp extends Application
     }
 
     @Override
-    public void start(Stage primaryStage){
-        new DisplayStage();
+    public void start(Stage primaryStage)
+    {
+        GameState gameState = new GameState();
+
+        new DisplayStage(gameState);
+        new ControlStage(gameState);
+
+
     }
 }
