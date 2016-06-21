@@ -1,9 +1,6 @@
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
-import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
@@ -13,31 +10,37 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.File;
+
 /**
  * Created by gaston on 6/21/2016.
  */
-public class DisplayStage extends Stage implements ResultSubmittedListener
+public class DisplayStage extends Stage implements ResultSubmittedListener, ResetListener
 {
     private final double RESULT_WIDTH_RATIO = .75;
 
     private GameState gameState;
     private Group root;
     private Text[] results;
+    private ImageView[] numberImages;
 
     public DisplayStage(GameState gameState)
     {
         this.gameState = gameState;
         gameState.addResultSubmittedListener(this);
+        gameState.addResetListener(this);
 
         results = new Text[GameState.MAX_RESULTS];
+        numberImages = new ImageView[6];
 
         final int initWidth = 800;
         final int initHeight = 680;
@@ -54,6 +57,7 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         setImageviewBounds(background, new Rectangle2D(0, 0, initWidth, initHeight));
         root.getChildren().add(background);
 
+        reset();
         show();
     }
 
@@ -77,14 +81,26 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         double width = widthRatio * sceneWidth;
         double height = heightRatio * sceneHeight;
 
-        System.out.println(x);
-
         return new Rectangle2D(x, y, width, height);
     }
 
 
     private void flipBox(int index, String result)
     {
+        Media sound = new Media(new File("right_answer.wav").toURI().toString());
+        MediaPlayer mediaPlayer = new MediaPlayer(sound);
+        mediaPlayer.play();
+
+
+        if(results[index] != null)
+        {
+            root.getChildren().remove(results[index]);
+        }
+        if(numberImages[index] != null)
+        {
+            root.getChildren().remove(numberImages[index]);
+        }
+
         ImageView box = new ImageView(
                 new Image("result_box.png")
         );
@@ -95,7 +111,8 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         SequentialTransition rotator = createRotator(box);
         rotator.play();
         rotator.onFinishedProperty().setValue(event -> {
-            Text text = new Text(result);
+            Text text = new Text(result.toUpperCase());
+            results[index] = text;
             text.setFill(Color.WHITE);
 
             final double xOffsetRatio = 0.01;
@@ -162,9 +179,54 @@ public class DisplayStage extends Stage implements ResultSubmittedListener
         }
     }
 
+    private ImageView getNumImage(int index)
+    {
+        return new ImageView(
+                new Image("num" + (index + 1) + ".png")
+        );
+    }
+
     @Override
     public void resultSubmitted(SubmissionEvent e)
     {
         flipBox(e.index, gameState.getResult(e.index));
+    }
+
+    @Override
+    public void reset()
+    {
+        for(int i = 0; i < numberImages.length; i++)
+        {
+            if(numberImages[i] != null)
+            {
+                root.getChildren().remove(numberImages[i]);
+                numberImages[i] = null;
+            }
+        }
+
+        for(int i = 0; i < results.length; i++)
+        {
+            if(results[i] != null)
+            {
+                root.getChildren().remove(results[i]);
+                results[i] = null;
+            }
+        }
+
+        for(int i = 0; i < gameState.getNumResults(); i++)
+        {
+            ImageView numberImage = getNumImage(i);
+            numberImages[i] = numberImage;
+
+            Rectangle2D bounds = getResultBox(i);
+
+            double boundsCenterX = (bounds.getMinX() + bounds.getMaxX()) / 2;
+            double boundsCenterY = (bounds.getMinY() + bounds.getMaxY()) / 2;
+
+            numberImage.setX(boundsCenterX - (numberImage.getBoundsInParent().getWidth() / 2));
+            numberImage.setY(boundsCenterY - (numberImage.getBoundsInParent().getHeight() / 2));
+
+            root.getChildren().add(numberImage);
+        }
     }
 }

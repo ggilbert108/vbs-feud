@@ -19,6 +19,6 @@ public class MainApp extends Application
         new DisplayStage(gameState);
         new ControlStage(gameState);
 
-
+        gameState.setNumResults(1);
     }
 }

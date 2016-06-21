@@ -10,13 +10,19 @@ public class GameState
     public final static int MAX_RESULTS = 8;
     public final static int MAX_RESULTS_HALF = 4;
 
+
     private String[] resultText;
     private EventListenerList listeners = new EventListenerList();
 
     public GameState()
     {
+        setNumResults(0);
         listeners = new EventListenerList();
-        setNumResults(MAX_RESULTS);
+    }
+
+    public void addResetListener(ResetListener listener)
+    {
+        listeners.add(ResetListener.class, listener);
     }
 
     public void addResultSubmittedListener(ResultSubmittedListener listener)
@@ -39,10 +45,27 @@ public class GameState
         }
     }
 
+    private void fireReset()
+    {
+        ResetListener[] resultSubmittedListeners = listeners.getListeners(ResetListener.class);
+        for(ResetListener listener : resultSubmittedListeners)
+        {
+            listener.reset();
+        }
+    }
+
     public void setNumResults(int n)
     {
+        if(n > 6)
+        {
+            return;
+        }
+
         resultText = new String[n];
+        fireReset();
     }
+
+
 
     public int getNumResults()
     {
@@ -69,4 +92,9 @@ class SubmissionEvent extends EventObject
         super(source);
         this.index = index;
     }
+}
+
+interface ResetListener extends EventListener
+{
+    void reset();
 }
