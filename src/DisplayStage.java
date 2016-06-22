@@ -23,9 +23,6 @@ import javafx.util.Duration;
 
 import java.io.File;
 
-/**
- * Created by gaston on 6/21/2016.
- */
 public class DisplayStage extends Stage implements ResultSubmittedListener, ResetListener, WrongAnswerListener
 {
     private final double RESULT_WIDTH_RATIO = .75;
@@ -72,7 +69,7 @@ public class DisplayStage extends Stage implements ResultSubmittedListener, Rese
         setScene(scene);
 
         background = new ImageView(
-                new Image("results.png")
+                new Image(getClass().getResourceAsStream("results.png"))
         );
         setImageviewBounds(background, new Rectangle2D(0, 0, getWidth(), getHeight()));
         root.getChildren().add(background);
@@ -122,9 +119,15 @@ public class DisplayStage extends Stage implements ResultSubmittedListener, Rese
 
     private void flipBox(int index, String result, int numResponses)
     {
-        Media sound = new Media(new File("right_answer.wav").toURI().toString());
-        MediaPlayer mediaPlayer = new MediaPlayer(sound);
-        mediaPlayer.play();
+        try
+        {
+            Media sound = new Media(getClass().getResource("right_answer.wav").toURI().toString());
+            MediaPlayer mediaPlayer = new MediaPlayer(sound);
+            mediaPlayer.play();
+        }
+        catch (Exception e) {
+            System.out.println("somethingelse");
+        }
 
 
         if(results[index] != null)
@@ -141,7 +144,7 @@ public class DisplayStage extends Stage implements ResultSubmittedListener, Rese
         }
 
         ImageView box = new ImageView(
-                new Image("result_box.png")
+                new Image(getClass().getResourceAsStream("result_box.png"))
         );
         Rectangle2D resultRect = getResultBox(index);
         setImageviewBounds(box, resultRect);
@@ -233,7 +236,7 @@ public class DisplayStage extends Stage implements ResultSubmittedListener, Rese
     private ImageView getNumImage(int index)
     {
         return new ImageView(
-                new Image("num" + (index + 1) + ".png")
+                new Image(getClass().getResourceAsStream("num" + (index + 1) + ".png"))
         );
     }
 
@@ -292,9 +295,16 @@ public class DisplayStage extends Stage implements ResultSubmittedListener, Rese
         if(showingX)
             return;
 
-        Media sound = new Media(new File("buzzer.wav").toURI().toString());
-        MediaPlayer mediaPlayer = new MediaPlayer(sound);
-        mediaPlayer.play();
+        try
+        {
+            Media sound = new Media(getClass().getResource("buzzer.wav").toURI().toString());
+            MediaPlayer mediaPlayer = new MediaPlayer(sound);
+            mediaPlayer.play();
+        }
+        catch(Exception e)
+        {
+            System.out.println("something");
+        }
 
         ImageView xImage = new ImageView(
             new Image("x" + index + ".png")

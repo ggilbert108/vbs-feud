@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="VBSFeud:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/VBSFeud_jar</output-path>
+    <root id="archive" name="VBSFeud.jar">
+      <element id="module-output" name="VBSFeud" />
+    </root>
+  </artifact>
+</component>
