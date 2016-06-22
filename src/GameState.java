@@ -1,6 +1,5 @@
 import javax.swing.event.EventListenerList;
-import java.util.EventListener;
-import java.util.EventObject;
+import java.util.*;
 
 /**
  * Created by gaston on 6/21/2016.
@@ -12,13 +11,17 @@ public class GameState
 
 
     private String[] resultText;
+    private int[] responses;
     private EventListenerList listeners = new EventListenerList();
+
 
     public GameState()
     {
         setNumResults(0);
         listeners = new EventListenerList();
     }
+
+    public void addWrongAnswerListener(WrongAnswerListener listener) { listeners.add(WrongAnswerListener.class, listener); }
 
     public void addResetListener(ResetListener listener)
     {
@@ -54,6 +57,15 @@ public class GameState
         }
     }
 
+    public void fireWrongAnswer(int index)
+    {
+        WrongAnswerListener[] resultSubmittedListeners = listeners.getListeners(WrongAnswerListener.class);
+        for(WrongAnswerListener listener : resultSubmittedListeners)
+        {
+            listener.wrongAnswer(index);
+        }
+    }
+
     public void setNumResults(int n)
     {
         if(n > 6)
@@ -62,15 +74,49 @@ public class GameState
         }
 
         resultText = new String[n];
+        responses = new int[n];
+        setNumResponses();
+
         fireReset();
     }
 
+    private void setNumResponses()
+    {
+        Random random = new Random();
+        ArrayList<Integer> randoms = new ArrayList<>();
+
+        for(int i = 0; i < responses.length - 1; i++)
+        {
+            randoms.add(random.nextInt(100));
+        }
+        randoms.add(0);
+        randoms.add(100);
+
+        Collections.sort(randoms);
+
+        for(int i = 0; i < responses.length; i++)
+        {
+            responses[i] = randoms.get(i + 1) - randoms.get(i);
+        }
+
+        Arrays.sort(responses);
+
+        for(int i = 0; i < responses.length / 2; i++)
+        {
+            int backIndex = (responses.length - 1) - i;
+            int temp = responses[i];
+            responses[i] = responses[backIndex];
+            responses[backIndex] = temp;
+        }
+    }
 
 
     public int getNumResults()
     {
         return resultText.length;
     }
+
+    public int getResponses(int index) {return  responses[index];}
 
     public String getResult(int index)
     {
@@ -97,4 +143,9 @@ class SubmissionEvent extends EventObject
 interface ResetListener extends EventListener
 {
     void reset();
+}
+
+interface WrongAnswerListener extends EventListener
+{
+    void wrongAnswer(int index);
 }

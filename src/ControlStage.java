@@ -1,3 +1,5 @@
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -38,6 +40,9 @@ public class ControlStage extends Stage
         }
 
         row++;
+        root.add(new XPane(), 0, row, 2, 1);
+
+        row++;
         root.add(new SetupPane(), 0, row, 2, 1);
 
 
@@ -52,6 +57,31 @@ public class ControlStage extends Stage
             boolean enabled = i < gameState.getNumResults();
             submissionPanes[i].setEnabled(enabled);
         }
+    }
+
+    public class XPane extends GridPane
+    {
+        public XPane()
+        {
+            setAlignment(Pos.CENTER);
+
+            for(int i = 0; i < 3; i++)
+            {
+                final int index = i + 1;
+                String xs = (i + 1) + "X";
+                Button button = new Button(xs);
+                button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        gameState.fireWrongAnswer(index);
+                    }
+                });
+
+                add(button, i, 0);
+            }
+
+        }
+
     }
 
     public class SubmissionPane extends GridPane

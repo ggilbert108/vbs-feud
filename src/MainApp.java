@@ -16,7 +16,7 @@ public class MainApp extends Application
     {
         GameState gameState = new GameState();
 
-        new DisplayStage(gameState);
+        DisplayStage dispayStage = new DisplayStage(gameState);
         new ControlStage(gameState);
 
         gameState.setNumResults(1);
